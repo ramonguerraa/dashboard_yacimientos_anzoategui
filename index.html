@@ -7,637 +7,700 @@
   
   <link rel="stylesheet" href="styles.css">
   
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-<div id="uploadScreen" class="upload-container">
-  
-  <div class="brand-welcome">
-    <img src="assets/logo_personal_dorado.png" alt="Logo Ramón Guerra" class="main-logo">
-    <h1 class="welcome-title">Ramón Guerra</h1>
-    <p class="welcome-subtitle">Consultoría de Datos & Analítica de Negocios</p>
-  </div>
-
+<!-- ══════════════════════════════════════
+  UPLOAD SCREEN
+══════════════════════════════════════ -->
+<div id="uploadScreen">
   <div class="upload-card">
-    <div class="upload-icon">🛢️</div>
-    <h2>Analizador de Portafolio de Yacimientos</h2>
-    <p>Sur del Estado Anzoátegui · Venezuela</p>
-    
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()">
-      <p>Arrastra tu archivo CSV del portafolio aquí</p>
-      <p style="font-size: 12px; color: var(--amber); margin-top: 8px;">o haz clic para explorar tus carpetas</p>
-      <input type="file" id="csvFile" accept=".csv" style="display: none;">
+    <div class="topbar-brand">
+      <div class="image"><img src="assets/logo_personal_dorado.png"></div>
+        <div>
+          <div class="brand-title"><b>Ramón Guerra</b></div>
+        <div class="brand-sub">Analista de Datos</div>
     </div>
-    
-    <div class="file-info" id="fileInfo" style="display: none;">
-      <span class="file-icon">📄</span>
-      <span id="fileName" class="file-name">archivo.csv</span>
+  </div>
+    <div class="upload-brand">
+      <div class="brand-icon">🛢</div>
+      <div class="upload-title">Portafolio de Yacimientos — Anzoátegui</div>
     </div>
-    
-    <button class="btn" id="processBtn" disabled>Procesar Datos Operativos</button>
+    <div class="upload-sub">
+      Herramienta de análisis descriptivo para priorización de inversión. Carga tu archivo CSV o Excel
+      con los registros de yacimientos y el dashboard se generará automáticamente, calculando todos los
+      indicadores derivados (margen, breakeven, ratios y eficiencia).
+    </div>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <div class="dz-icon">📂</div>
+      <div class="dz-text">Arrastra tu archivo aquí o haz clic para seleccionarlo</div>
+      <div class="dz-sub">Formatos aceptados: .csv · .xlsx · .xls</div>
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+    </div>
+
+    <div class="upload-status" id="uploadStatus"></div>
+
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="btnLoadDemo" onclick="loadDemoData()">▶ Usar datos de ejemplo (15 yacimientos)</button>
+      <button class="btn" id="btnTemplate" onclick="downloadTemplate()">⬇ Descargar plantilla CSV</button>
+      <button class="btn btn-ghost" id="btnEnter" onclick="enterDashboard()" disabled>Entrar al dashboard →</button>
+    </div>
+
+    <details class="fields-detail">
+      <summary>▸ Ver columnas requeridas y opcionales del archivo (24 variables)</summary>
+      <div class="field-list">
+        <div class="field-item"><b>yacimiento</b> — texto</div>
+        <div class="field-item"><b>zona</b> — texto</div>
+        <div class="field-item"><b>operadora</b> — texto (opcional)</div>
+        <div class="field-item"><b>año</b> — número (2022–2024…)</div>
+        <div class="field-item"><b>tipo_crudo</b> — Liviano/Mediano/Pesado/Extrapesado</div>
+        <div class="field-item"><b>gravedad_api</b> — °API</div>
+        <div class="field-item"><b>prod_diaria_bbl</b> — bbl/día</div>
+        <div class="field-item"><b>variacion_prod_pct</b> — % (opcional, se calcula si hay 2+ años)</div>
+        <div class="field-item"><b>gor</b> — scf/bbl</div>
+        <div class="field-item"><b>bsw_pct</b> — %</div>
+        <div class="field-item"><b>lifting_cost_usd</b> — USD/bbl</div>
+        <div class="field-item"><b>precio_realizado_usd</b> — USD/bbl</div>
+        <div class="field-item"><b>capex_acumulado_musd</b> — MM USD</div>
+        <div class="field-item"><b>pozos_activos</b> — unidades</div>
+        <div class="field-item"><b>pozos_totales</b> — unidades</div>
+        <div class="field-item"><b>downtime_pct</b> — %</div>
+        <div class="field-item"><b>antiguedad_infraestructura</b> — años</div>
+        <div class="field-item"><b>reservas_1p_mmbbl</b> — MMbbl</div>
+        <div class="field-item"><b>reservas_2p_mmbbl</b> — MMbbl</div>
+        <div class="field-item"><b>factor_recobro_pct</b> — %</div>
+        <div class="field-item"><b>clasificacion_reservas</b> — 1P/2P/3P</div>
+        <div class="field-item"><b>cv_produccion</b> — 0–1 (opcional)</div>
+        <div class="field-item"><b>incidentes_operativos</b> — eventos/año</div>
+        <div class="field-item"><b>flaring_mmscfd</b> — MMscf/día</div>
+        <div class="field-item"><b>sancion_activa</b> — 0 ó 1</div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-lo);line-height:1.6">
+        ⚙️ <b style="color:var(--amber)">Calculados automáticamente</b> — no es necesario incluirlos:
+        margen_operativo_usd, breakeven_usd, eficiencia_capex, ratio_pozos_activos_pct, prod_por_pozo_bbl.
+      </div>
+    </details>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════
+  DASHBOARD ROOT (oculto hasta cargar datos)
+══════════════════════════════════════ -->
 <div id="dashboardRoot">
 
-  <nav class="topbar">
-    <div class="topbar-brand">
-      <div class="brand-icon">🛢</div>
-      <div>
-        <div class="brand-title">PORTAFOLIO ANZOÁTEGUI</div>
-        <div class="brand-sub">Sur del Estado · Venezuela · 2022–2024</div>
-      </div>
+<!-- ══ TOPBAR ══ -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <div class="image"><img src="assets/logo_personal_dorado.png" height="40"></div>
+    <div>
+      <div class="brand-title">PORTAFOLIO ANZOÁTEGUI</div>
+      <div class="brand-sub">Sur del Estado</div>
+      <div class="brand-sub">Venezuela · 2022–2024</div>
     </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="goTo('p0',this)">
+      <span class="nav-dot" style="background:#C8841A"></span> Resumen Ejecutivo
+    </div>
+    <div class="nav-tab" onclick="goTo('p1',this)">
+      <span class="nav-dot" style="background:#7B4F0A"></span> P1 · Producción
+    </div>
+    <div class="nav-tab" onclick="goTo('p2',this)">
+      <span class="nav-dot" style="background:#1A4A2E"></span> P2 · Financiero
+    </div>
+    <div class="nav-tab" onclick="goTo('p3',this)">
+      <span class="nav-dot" style="background:#0E3A58"></span> P3 · Infraestructura
+    </div>
+    <div class="nav-tab" onclick="goTo('p4',this)">
+      <span class="nav-dot" style="background:#3A1E6A"></span> P4 · Reservas
+    </div>
+    <div class="nav-tab" onclick="goTo('p5',this)">
+      <span class="nav-dot" style="background:#5A1A1A"></span> P5 · Riesgo
+    </div>
+    <div class="nav-tab" onclick="goTo('p6',this)" style="border-left:2px solid var(--amber)">
+      <span class="nav-dot" style="background:#E8A832"></span> 📖 ¿Qué significa esto?
+    </div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">Año</span>
+    <select id="yearFilter" onchange="applyFilters()">
+      <option value="all">2022–2024</option>
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+    </select>
+    <select id="zonaFilter" onchange="applyFilters()">
+      <option value="all">Todas las zonas</option>
+      <option value="Faja Orinoco">Faja Orinoco</option>
+      <option value="Oficina Norte">Oficina Norte</option>
+      <option value="Oficina Central">Oficina Central</option>
+      <option value="Oficina Sur">Oficina Sur</option>
+      <option value="Anaco">Anaco</option>
+    </select>
+  </div>
+</nav>
 
-    <div class="nav-tabs">
-      <div class="nav-tab active" onclick="goTo('p0',this)">
-        <span class="nav-dot" style="background:#C8841A"></span> Resumen Ejecutivo
-      </div>
-      <div class="nav-tab" onclick="goTo('p1',this)">
-        <span class="nav-dot" style="background:#7B4F0A"></span> P1 · Producción
-      </div>
-      <div class="nav-tab" onclick="goTo('p2',this)">
-        <span class="nav-dot" style="background:#1A4A2E"></span> P2 · Financiero
-      </div>
-      <div class="nav-tab" onclick="goTo('p3',this)">
-        <span class="nav-dot" style="background:#0E3A58"></span> P3 · Infraestructura
-      </div>
-      <div class="nav-tab" onclick="goTo('p4',this)">
-        <span class="nav-dot" style="background:#3A1E6A"></span> P4 · Reservas
-      </div>
-      <div class="nav-tab" onclick="goTo('p5',this)">
-        <span class="nav-dot" style="background:#5A1A1A"></span> P5 · Riesgo
-      </div>
-      <div class="nav-tab" onclick="goTo('p6',this)" style="border-left:2px solid var(--amber)">
-        <span class="nav-dot" style="background:#E8A832"></span> 📖 ¿Qué significa esto?
-      </div>
-    </div>
+<!-- ══ KPI STRIP ══ -->
+<div class="kpi-strip">
+  <div class="kpi-card">
+    <div class="kpi-label">Producción Total</div>
+    <div class="kpi-value" id="kpi-prod">418,600<span class="kpi-unit">bbl/día</span></div>
+    <div class="kpi-delta down" id="kpi-prod-d">▼ −6.2% vs año anterior</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Margen Op. Promedio</div>
+    <div class="kpi-value" id="kpi-margen">34.8<span class="kpi-unit">USD/bbl</span></div>
+    <div class="kpi-delta up" id="kpi-margen-d">▲ +4.1 USD vs 2022</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Sobre Breakeven</div>
+    <div class="kpi-value" id="kpi-be">73<span class="kpi-unit">%</span></div>
+    <div class="kpi-delta warn" id="kpi-be-d">⚠ 4 campos en riesgo</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Ratio Pozos Activos</div>
+    <div class="kpi-value" id="kpi-pozos">57<span class="kpi-unit">%</span></div>
+    <div class="kpi-delta down" id="kpi-pozos-d">▼ −3pts en 3 años</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Reservas 1P Totales</div>
+    <div class="kpi-value" id="kpi-res">14,820<span class="kpi-unit">MMbbl</span></div>
+    <div class="kpi-delta" id="kpi-res-d">15 yacimientos activos</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Índice de Riesgo</div>
+    <div class="kpi-value" id="kpi-risk">0.41<span class="kpi-unit">/1.0</span></div>
+    <div class="kpi-delta down" id="kpi-risk-d">▼ 8 campos con sanción</div>
+  </div>
+</div>
 
-    <div class="filter-bar">
-      <span class="filter-label">Año</span>
-      <select id="yearFilter" onchange="applyFilters()">
-        <option value="all">2022–2024</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-      </select>
-      
-      <select id="zonaFilter" onchange="applyFilters()">
-        <option value="all">Todas las zonas</option>
-        <option value="Faja Orinoco">Faja Orinoco</option>
-        <option value="Oficina Norte">Oficina Norte</option>
-        <option value="Oficina Central">Oficina Central</option>
-        <option value="Oficina Sur">Oficina Sur</option>
-        <option value="Anaco">Anaco</option>
-      </select>
-    </div>
-  </nav>
+<!-- ══ MAIN ══ -->
+<main class="main">
 
-  <div class="kpi-strip">
-    <div class="kpi-card">
-      <div class="kpi-label">Producción Total</div>
-      <div class="kpi-value" id="kpi-prod">0<span class="kpi-unit">bbl/día</span></div>
-      <div class="kpi-delta down" id="kpi-prod-d">...</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Margen Op. Promedio</div>
-      <div class="kpi-value" id="kpi-margen">0<span class="kpi-unit">USD/bbl</span></div>
-      <div class="kpi-delta up" id="kpi-margen-d">...</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Sobre Breakeven</div>
-      <div class="kpi-value" id="kpi-be">0<span class="kpi-unit">%</span></div>
-      <div class="kpi-delta warn" id="kpi-be-d">...</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Ratio Pozos Activos</div>
-      <div class="kpi-value" id="kpi-pozos">0<span class="kpi-unit">%</span></div>
-      <div class="kpi-delta down" id="kpi-pozos-d">...</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Reservas 1P Totales</div>
-      <div class="kpi-value" id="kpi-res">0<span class="kpi-unit">MMbbl</span></div>
-      <div class="kpi-delta" id="kpi-res-d">...</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Índice de Riesgo</div>
-      <div class="kpi-value" id="kpi-risk">0.0<span class="kpi-unit">/1.0</span></div>
-      <div class="kpi-delta down" id="kpi-risk-d">...</div>
+<!-- ════════════════════════════════════════
+  P0 · RESUMEN EJECUTIVO
+════════════════════════════════════════ -->
+<section class="page active" id="p0">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Vista General · Portafolio</div>
+      <div class="page-title">Resumen Ejecutivo</div>
+      <div class="page-desc">Estado actual del portafolio de 15 yacimientos activos en el sur de Anzoátegui. Visión comparativa multidimensional.</div>
     </div>
   </div>
 
-  <main class="main">
-    <section class="page active" id="p0">
-      
-      <div class="page-header">
-        <div>
-          <div class="page-eyebrow">Vista General · Portafolio</div>
-          <div class="page-title">Resumen Ejecutivo</div>
-          <div class="page-desc">Estado actual del portafolio de 15 yacimientos activos en el sur de Anzoátegui. Visión comparativa multidimensional.</div>
-        </div>
+  <div class="insight-banner">
+    <div class="insight-icon">🔍</div>
+    <div>
+      <div class="insight-label">Insight I1 · Diagnóstico Central</div>
+      <div class="insight-text">
+        <strong>Concentración productiva con alta vulnerabilidad:</strong> 3–4 yacimientos de la Faja generan &gt;60% de la producción total, pero concentran simultáneamente el mayor lifting cost, BSW &gt;70%, infraestructura envejecida y sanciones activas. El portafolio descansa sobre activos que son a la vez los más productivos y los más frágiles.
       </div>
-
-      <div class="insight-banner">
-        <div class="insight-icon">🔍</div>
-        <div>
-          <div class="insight-label">Insight I1 · Diagnóstico Central</div>
-          <div class="insight-text">
-            <strong>Concentración productiva con alta vulnerabilidad:</strong> 3–4 yacimientos de la Faja generan &gt;60% de la producción total, pero concentran simultáneamente el mayor lifting cost, BSW &gt;70%, infraestructura envejecida y sanciones activas. El portafolio descansa sobre activos que son a la vez los más productivos y los más frágiles.
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Producción por Zona 2022–2024</span>
-            <span class="panel-sub">bbl/día promedio</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-zona-prod" height="220"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Scatter · Producción vs Margen Operativo</span>
-            <span class="panel-sub">tamaño = reservas 1P</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-scatter-exec" height="220"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Top 5 · Mejor Desempeño Compuesto</span>
-            <span class="panel-sub">Producción + Margen + Reservas</span>
-          </div>
-          <div class="panel-body">
-            <div class="score-card" id="top5"></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Bottom 5 · Mayor Atención Requerida</span>
-            <span class="panel-sub">Riesgo + Margen bajo + Downtime</span>
-          </div>
-          <div class="panel-body">
-            <div class="score-card" id="bot5"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Mapa de Calor del Portafolio · 5 Dimensiones</span>
-          <span class="panel-sub">Verde = favorable · Rojo = crítico</span>
-        </div>
-        <div class="panel-body">
-          <div id="heatmap-container"></div>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p1">
-      
-      <div class="page-header">
-        <div>
-          <div class="page-eyebrow">Factor F1 · Producción</div>
-          <div class="page-title">Perfil Productivo por Yacimiento</div>
-          <div class="page-desc">Volumen, calidad del crudo, tendencia histórica y comportamiento del fluido producido (GOR y BSW) por yacimiento.</div>
-        </div>
-      </div>
-
-      <div class="insight-banner">
-        <div class="insight-icon">🔍</div>
-        <div>
-          <div class="insight-label">Insight I1 · Concentración Productiva</div>
-          <div class="insight-text">
-            <strong>Hamaca, Cerro Negro y Petroanzoátegui representan más del 60% del volumen total</strong> del portafolio. Esta concentración en crudo extrapesado con BSW &gt;60% y alta variabilidad operativa hace al portafolio altamente sensible a cualquier disrupción en estos tres campos. Los yacimientos de Oficina, con menor volumen pero crudo de mejor calidad, están siendo subexplotados.
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Producción Diaria por Yacimiento</span>
-            <span class="panel-sub">bbl/día · promedio 3 años</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-prod-bar" height="280"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Tendencia de Producción 2022–2024</span>
-            <span class="panel-sub">Variación % anual por yacimiento</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-trend-line" height="280"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Distribución por Gravedad API</span>
-            <span class="panel-sub">°API promedio por yacimiento</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-api" height="220"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">BSW vs GOR por Tipo de Crudo</span>
-            <span class="panel-sub">Calidad del fluido producido</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-bsw-gor" height="220"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Tabla · Ranking Productivo Completo</span>
-          <span class="panel-sub">Ordenado por producción diaria promedio 2022–2024</span>
-        </div>
-        <div class="panel-body">
-          <table class="data-table" id="t-prod"></table>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p2">
-      
-      <div class="page-header">
-        <div>
-          <div class="page-eyebrow">Factor F2 · Financiero</div>
-          <div class="page-title">Análisis de Rentabilidad y Costos</div>
-          <div class="page-desc">Margen operativo, lifting cost, precio realizado, breakeven y eficiencia de capital por yacimiento.</div>
-        </div>
-      </div>
-
-      <div class="insight-banner">
-        <div class="insight-icon">🔍</div>
-        <div>
-          <div class="insight-label">Insight I2 · Brecha de Rentabilidad: La Trampa del Crudo Pesado</div>
-          <div class="insight-text">
-            <strong>Los yacimientos de Oficina generan márgenes 25–30% superiores a la Faja a pesar de producir menos volumen.</strong> El diferencial negativo del extrapesado (hasta −22 USD/bbl vs. WTI) combinado con lifting costs de 16–20 USD/bbl coloca a varios campos de la Faja cerca o por debajo del breakeven. Invertir más en volumen en la Faja sin reducir costos operativos no mejora la rentabilidad del portafolio.
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Scatter · Lifting Cost vs Margen Operativo</span>
-            <span class="panel-sub">Cuadrantes de rentabilidad por zona</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-lifting-scatter" height="260"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Margen Operativo por Yacimiento</span>
-            <span class="panel-sub">USD/bbl promedio · línea = breakeven promedio</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-margen-bar" height="260"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Precio Realizado vs Lifting Cost</span>
-            <span class="panel-sub">Comparativa por tipo de crudo</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-precio-lifting" height="220"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Eficiencia de CAPEX</span>
-            <span class="panel-sub">bbl producidos por USD invertido</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-capex-eff" height="220"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Tabla · Análisis Financiero Detallado</span>
-          <span class="panel-sub">Semáforo por situación vs breakeven</span>
-        </div>
-        <div class="panel-body">
-          <table class="data-table" id="t-fin"></table>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p3">
-      
-      <div class="page-header">
-        <div>
-          <div class="page-eyebrow">Factor F3 · Infraestructura</div>
-          <div class="page-title">Eficiencia Operativa de Pozos e Instalaciones</div>
-          <div class="page-desc">Ratio de pozos activos, productividad individual, downtime y antigüedad de infraestructura de superficie.</div>
-        </div>
-      </div>
-
-      <div class="insight-banner">
-        <div class="insight-icon">🔍</div>
-        <div>
-          <div class="insight-label">Insight I3 · Deterioro Silencioso de la Base de Pozos</div>
-          <div class="insight-text">
-            <strong>El ratio promedio de pozos activos del portafolio es &lt;60%, con varios yacimientos maduros bajo el 50%.</strong> Este deterioro no es geológico sino operativo: falta de workover e inversión de mantenimiento. Los campos con mayor antigüedad de infraestructura muestran downtime &gt;20% y son precisamente aquellos con reservas 2P remanentes significativas. <strong>Reactivar pozos existentes representa la mayor oportunidad de retorno inmediato del portafolio.</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Pozos Activos vs Totales</span>
-            <span class="panel-sub">Gap de pozos inactivos por yacimiento</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-pozos-bar" height="280"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Antigüedad Infraestructura vs Downtime</span>
-            <span class="panel-sub">Correlación operativa</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-edad-down" height="280"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2" style="align-items: stretch;">
-        <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div class="panel-head">
-            <span class="panel-title">Producción por Pozo Activo</span>
-            <span class="panel-sub">bbl/día/pozo · ranking</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-prod-pozo" height="220"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div class="panel-head">
-            <span class="panel-title">Ratio Pozos Activos</span>
-            <span class="panel-sub">% activos / totales por yacimiento</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-ratio-pozos" height="220"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Tabla · Eficiencia Operativa Completa</span>
-          <span class="panel-sub">Semáforo por indicador</span>
-        </div>
-        <div class="panel-body">
-          <table class="data-table" id="t-infra"></table>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p4">
-      
-      <div class="page-header">
-        <div>
-          <div class="page-eyebrow">Factor F4 · Reservas y Geología</div>
-          <div class="page-title">Portafolio de Reservas y Retorno de Capital</div>
-          <div class="page-desc">Reservas probadas (1P/2P), factor de recobro, CAPEX histórico y eficiencia de inversión por yacimiento.</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Reservas 1P vs 2P por Yacimiento</span>
-            <span class="panel-sub">MMbbl</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-reservas-bar" height="280"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">CAPEX Acumulado vs Reservas 1P</span>
-            <span class="panel-sub">tamaño = factor de recobro</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-capex-res" height="280"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2" style="align-items: stretch;">
-        <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div class="panel-head">
-            <span class="panel-title">Factor de Recobro por Yacimiento</span>
-            <span class="panel-sub">% del POES estimado recuperable</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-recobro" height="220"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div class="panel-head">
-            <span class="panel-title">Clasificación de Reservas (1P/2P/3P)</span>
-            <span class="panel-sub">Distribución del portafolio</span>
-          </div>
-          <div class="panel-body" style="display:flex; flex: 1; align-items:center; justify-content:center; padding:10px 0;">
-            <div class="chart-wrap" style="max-width:320px; width:100%">
-              <canvas id="c-clasif" height="260"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Tabla · Portafolio de Reservas Completo</span>
-          <span class="panel-sub">Auditoría volumétrica y factores de recobro</span>
-        </div>
-        <div class="panel-body">
-          <table class="data-table" id="t-res"></table>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p5">
-      
-      <div class="page-header">
-        <div>
-          <div class="meta-date" style="display:none;">2026</div>
-          <div class="page-eyebrow">Factor F5 · Riesgo</div>
-          <div class="page-title">Perfil de Riesgo Operativo y Ambiental</div>
-          <div class="page-desc">Volatilidad de producción, incidentes operativos, flaring y sanciones activas por yacimiento.</div>
-        </div>
-      </div>
-
-      <div class="insight-banner">
-        <div class="insight-icon">🔍</div>
-        <div>
-          <div class="insight-label">Insight I1 + I2 · Riesgo Asimétrico en el Portafolio</div>
-          <div class="insight-text">
-            <strong>Los 5 yacimientos de mayor producción concentran también el 80% del flaring total y el 100% de las sanciones activas.</strong> El riesgo no está distribuido uniformemente: la Faja del Orinoco es simultáneamente el motor productivo y el mayor pasivo ambiental y regulatorio del portafolio. Los yacimientos de Oficina presentan perfiles de riesgo significativamente más bajos con márgenes superiores.
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">CV Producción vs Incidentes</span>
-            <span class="panel-sub">Cuadrantes de riesgo operativo</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-riesgo-scatter" height="280"></canvas></div>
-          </div>
-        </div>
-        
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">Flaring por Yacimiento</span>
-            <span class="panel-sub">MMscf/día promedio · pasivo ambiental</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="c-flaring" height="280"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">Tabla · Perfil de Riesgo por Yacimiento</span>
-          <span class="panel-sub">Semáforo en 4 dimensiones de riesgo</span>
-        </div>
-        <div class="panel-body">
-          <table class="data-table" id="t-riesgo"></table>
-        </div>
-      </div>
-
-    </section>
-    <section class="page" id="p6">
-
-      <div class="interp-hero">
-        <h2>📖 ¿Qué nos dicen estos datos? — Explicación en lenguaje sencillo</h2>
-        <p>Esta página traduce todo el análisis técnico anterior a ideas simples. No necesitas saber de petróleo
-        ni de estadística para entenderla: aquí está la historia del portafolio cargado, contada en términos
-        llanos, con la evidencia que la respalda — calculada automáticamente a partir de tus datos.</p>
-        <div class="tag-row" id="heroTags">
-          <span class="interp-tag">— yacimientos analizados</span>
-          <span class="interp-tag">— años de datos</span>
-          <span class="interp-tag">3 hallazgos principales</span>
-          <span class="interp-tag">Análisis descriptivo</span>
-        </div>
-      </div>
-
-      <div class="story-card active">
-        <div class="story-num">01</div>
-        <div class="story-body">
-          <div class="story-title" id="s1-title">Concentración productiva del portafolio</div>
-          <div class="story-plain" id="s1-plain">Calculando…</div>
-          <div class="story-detail" id="s1-detail"></div>
-          <div class="story-evidence" id="s1-evidence"></div>
-          <div class="story-action" id="s1-action"></div>
-        </div>
-      </div>
-
-      <div class="story-card active">
-        <div class="story-num">02</div>
-        <div class="story-body">
-          <div class="story-title" id="s2-title">Brecha de rentabilidad entre grupos de crudo</div>
-          <div class="story-plain" id="s2-plain">Calculando…</div>
-          <div class="story-detail" id="s2-detail"></div>
-          <div class="story-evidence" id="s2-evidence"></div>
-          <div class="story-action" id="s2-action"></div>
-        </div>
-      </div>
-
-      <div class="story-card active">
-        <div class="story-num">03</div>
-        <div class="story-body">
-          <div class="story-title" id="s3-title">Estado de la base de pozos</div>
-          <div class="story-plain" id="s3-plain">Calculando…</div>
-          <div class="story-detail" id="s3-detail"></div>
-          <div class="story-evidence" id="s3-evidence"></div>
-          <div class="story-action" id="s3-action"></div>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div class="conclusion-banner" id="conclusionBanner"></div>
-
-      <div class="section-divider"></div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <span class="panel-title">📚 Glosario · Términos usados en este análisis</span>
-          <span class="panel-sub">Para quienes no son del sector petrolero</span>
-        </div>
-        <div class="panel-body">
-          <div class="glossary-grid">
-            <div class="gloss-item"><div class="gloss-term">Yacimiento</div><div class="gloss-def">Un área geográfica donde se ha confirmado que existe petróleo y de donde se extrae mediante pozos.</div></div>
-            <div class="gloss-item"><div class="gloss-term">°API (gravedad API)</div><div class="gloss-def">Mide qué tan "pesado" o "liviano" es el petróleo. Mientras más alto el número, más liviano y más valioso es el crudo.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Lifting cost</div><div class="gloss-def">Lo que cuesta sacar un barril de petróleo a la superficie: energía, químicos, personal y mantenimiento.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Margen operativo</div><div class="gloss-def">La ganancia que queda por cada barril después de restar el costo de producirlo, antes de otros gastos.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Punto de equilibrio (breakeven)</div><div class="gloss-def">El precio mínimo al que se debe vender un barril para no perder dinero.</div></div>
-            <div class="gloss-item"><div class="gloss-term">BSW (agua y sedimentos)</div><div class="gloss-def">El porcentaje de agua mezclada con el petróleo que sale del pozo. Más agua significa más costo de tratamiento.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Pozos activos vs. totales</div><div class="gloss-def">De todos los pozos que alguna vez se perforaron en un yacimiento, cuántos siguen produciendo hoy.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Downtime</div><div class="gloss-def">El porcentaje de tiempo que la producción estuvo detenida por fallas o reparaciones no planeadas.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Reservas 1P / 2P</div><div class="gloss-def">El petróleo que aún queda bajo tierra. "1P" es lo que se tiene casi seguro que se puede sacar; "2P" incluye también lo probable.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Factor de recobro</div><div class="gloss-def">Qué porcentaje del petróleo total que existe en el yacimiento se podrá realmente extraer con la tecnología actual.</div></div>
-            <div class="gloss-item"><div class="gloss-term">Flaring (quema de gas)</div><div class="gloss-def">Cuando el gas que sale junto con el petróleo se quema en una antorcha en vez de aprovecharse. Es un desperdicio y un problema ambiental.</div></div>
-            <div class="gloss-item"><div class="gloss-term">CAPEX</div><div class="gloss-def">El dinero invertido en construir, perforar o mejorar las instalaciones de un yacimiento.</div></div>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-  </main> <footer class="dash-footer">
-    <div class="footer-text">Portafolio de Yacimientos · <span id="footerZona">Sur de Anzoátegui</span> · <span>Análisis Descriptivo</span></div>
-    <div class="footer-text"><span id="footerStats">— yacimientos · — registros</span> · 25 variables · 5 factores</div>
-    <div class="footer-text">Elaborado por: <strong style="color:var(--amber);">ramonguerraa</strong></div>
-  </footer>
-
-  <div class="reload-bar">
-    <button class="btn" onclick="resetTool()">↺ Cargar otro archivo</button>
+    </div>
   </div>
 
-</div><script src="app.js"></script>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Producción por Zona 2022–2024</span>
+        <span class="panel-sub">bbl/día promedio</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-zona-prod" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Scatter · Producción vs Margen Operativo</span>
+        <span class="panel-sub">tamaño = reservas 1P</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-scatter-exec" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Top 5 · Mejor Desempeño Compuesto</span>
+        <span class="panel-sub">Producción + Margen + Reservas</span>
+      </div>
+      <div class="panel-body">
+        <div class="score-card" id="top5"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Bottom 5 · Mayor Atención Requerida</span>
+        <span class="panel-sub">Riesgo + Margen bajo + Downtime</span>
+      </div>
+      <div class="panel-body">
+        <div class="score-card" id="bot5"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Mapa de Calor del Portafolio · 5 Dimensiones</span>
+      <span class="panel-sub">Verde = favorable · Rojo = crítico</span>
+    </div>
+    <div class="panel-body">
+      <div id="heatmap-container"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P1 · PRODUCCIÓN
+════════════════════════════════════════ -->
+<section class="page" id="p1">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Factor F1 · Producción</div>
+      <div class="page-title">Perfil Productivo por Yacimiento</div>
+      <div class="page-desc">Volumen, calidad del crudo, tendencia histórica y comportamiento del fluido producido (GOR y BSW) por yacimiento.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner">
+    <div class="insight-icon">🔍</div>
+    <div>
+      <div class="insight-label">Insight I1 · Concentración Productiva</div>
+      <div class="insight-text">
+        <strong>Hamaca, Cerro Negro y Petroanzoátegui representan más del 60% del volumen total</strong> del portafolio. Esta concentración en crudo extrapesado con BSW &gt;60% y alta variabilidad operativa hace al portafolio altamente sensible a cualquier disrupción en estos tres campos. Los yacimientos de Oficina, con menor volumen pero crudo de mejor calidad, están siendo subexplotados.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Producción Diaria por Yacimiento</span>
+        <span class="panel-sub">bbl/día · promedio 3 años</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-prod-bar" height="280"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Tendencia de Producción 2022–2024</span>
+        <span class="panel-sub">Variación % anual por yacimiento</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-trend-line" height="280"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Distribución por Gravedad API</span>
+        <span class="panel-sub">°API promedio por yacimiento</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-api" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">BSW vs GOR por Tipo de Crudo</span>
+        <span class="panel-sub">Calidad del fluido producido</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-bsw-gor" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Tabla · Ranking Productivo Completo</span>
+      <span class="panel-sub">Ordenado por producción diaria promedio 2022–2024</span>
+    </div>
+    <div class="panel-body">
+      <table class="data-table" id="t-prod"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P2 · FINANCIERO
+════════════════════════════════════════ -->
+<section class="page" id="p2">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Factor F2 · Financiero</div>
+      <div class="page-title">Análisis de Rentabilidad y Costos</div>
+      <div class="page-desc">Margen operativo, lifting cost, precio realizado, breakeven y eficiencia de capital por yacimiento.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner">
+    <div class="insight-icon">🔍</div>
+    <div>
+      <div class="insight-label">Insight I2 · Brecha de Rentabilidad: La Trampa del Crudo Pesado</div>
+      <div class="insight-text">
+        <strong>Los yacimientos de Oficina generan márgenes 25–30% superiores a la Faja a pesar de producir menos volumen.</strong> El diferencial negativo del extrapesado (hasta −22 USD/bbl vs. WTI) combinado con lifting costs de 16–20 USD/bbl coloca a varios campos de la Faja cerca o por debajo del breakeven. Invertir más en volumen en la Faja sin reducir costos operativos no mejora la rentabilidad del portafolio.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Scatter · Lifting Cost vs Margen Operativo</span>
+        <span class="panel-sub">Cuadrantes de rentabilidad por zona</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-lifting-scatter" height="260"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Margen Operativo por Yacimiento</span>
+        <span class="panel-sub">USD/bbl promedio · línea = breakeven promedio</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-margen-bar" height="260"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Precio Realizado vs Lifting Cost</span>
+        <span class="panel-sub">Comparativa por tipo de crudo</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-precio-lifting" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Eficiencia de CAPEX</span>
+        <span class="panel-sub">bbl producidos por USD invertido</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-capex-eff" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Tabla · Análisis Financiero Detallado</span>
+      <span class="panel-sub">Semáforo por situación vs breakeven</span>
+    </div>
+    <div class="panel-body">
+      <table class="data-table" id="t-fin"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P3 · INFRAESTRUCTURA
+════════════════════════════════════════ -->
+<section class="page" id="p3">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Factor F3 · Infraestructura</div>
+      <div class="page-title">Eficiencia Operativa de Pozos e Instalaciones</div>
+      <div class="page-desc">Ratio de pozos activos, productividad individual, downtime y antigüedad de infraestructura de superficie.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner">
+    <div class="insight-icon">🔍</div>
+    <div>
+      <div class="insight-label">Insight I3 · Deterioro Silencioso de la Base de Pozos</div>
+      <div class="insight-text">
+        <strong>El ratio promedio de pozos activos del portafolio es &lt;60%, con varios yacimientos maduros bajo el 50%.</strong> Este deterioro no es geológico sino operativo: falta de workover e inversión de mantenimiento. Los campos con mayor antigüedad de infraestructura muestran downtime &gt;20% y son precisamente aquellos con reservas 2P remanentes significativas. <strong>Reactivar pozos existentes representa la mayor oportunidad de retorno inmediato del portafolio.</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Pozos Activos vs Totales</span>
+        <span class="panel-sub">Gap de pozos inactivos por yacimiento</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-pozos-bar" height="280"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Antigüedad Infraestructura vs Downtime</span>
+        <span class="panel-sub">Correlación operativa</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-edad-down" height="280"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Producción por Pozo Activo</span>
+        <span class="panel-sub">bbl/día/pozo · ranking</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-prod-pozo" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Ratio Pozos Activos</span>
+        <span class="panel-sub">% activos / totales por yacimiento</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-ratio-pozos" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Tabla · Eficiencia Operativa Completa</span>
+      <span class="panel-sub">Semáforo por indicador</span>
+    </div>
+    <div class="panel-body">
+      <table class="data-table" id="t-infra"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P4 · RESERVAS
+════════════════════════════════════════ -->
+<section class="page" id="p4">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Factor F4 · Reservas y Geología</div>
+      <div class="page-title">Portafolio de Reservas y Retorno de Capital</div>
+      <div class="page-desc">Reservas probadas (1P/2P), factor de recobro, CAPEX histórico y eficiencia de inversión por yacimiento.</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Reservas 1P vs 2P por Yacimiento</span>
+        <span class="panel-sub">MMbbl</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-reservas-bar" height="280"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">CAPEX Acumulado vs Reservas 1P</span>
+        <span class="panel-sub">tamaño = factor de recobro</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-capex-res" height="280"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Factor de Recobro por Yacimiento</span>
+        <span class="panel-sub">% del POES estimado recuperable</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-recobro" height="220"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Clasificación de Reservas (1P/2P/3P)</span>
+        <span class="panel-sub">Distribución del portafolio</span>
+      </div>
+      <div class="panel-body" style="display:flex;align-items:center;justify-content:center;">
+        <div class="chart-wrap" style="max-width:260px;width:100%"><canvas id="c-clasif" height="220"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Tabla · Portafolio de Reservas Completo</span>
+    </div>
+    <div class="panel-body">
+      <table class="data-table" id="t-res"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P5 · RIESGO
+════════════════════════════════════════ -->
+<section class="page" id="p5">
+  <div class="page-header">
+    <div>
+      <div class="page-eyebrow">Factor F5 · Riesgo</div>
+      <div class="page-title">Perfil de Riesgo Operativo y Ambiental</div>
+      <div class="page-desc">Volatilidad de producción, incidentes operativos, flaring y sanciones activas por yacimiento.</div>
+    </div>
+  </div>
+
+  <div class="insight-banner">
+    <div class="insight-icon">🔍</div>
+    <div>
+      <div class="insight-label">Insight I1 + I2 · Riesgo Asimétrico en el Portafolio</div>
+      <div class="insight-text">
+        <strong>Los 5 yacimientos de mayor producción concentran también el 80% del flaring total y el 100% de las sanciones activas.</strong> El riesgo no está distribuido uniformemente: la Faja del Orinoco es simultáneamente el motor productivo y el mayor pasivo ambiental y regulatorio del portafolio. Los yacimientos de Oficina presentan perfiles de riesgo significativamente más bajos con márgenes superiores.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">CV Producción vs Incidentes</span>
+        <span class="panel-sub">Cuadrantes de riesgo operativo</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-riesgo-scatter" height="280"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Flaring por Yacimiento</span>
+        <span class="panel-sub">MMscf/día promedio · pasivo ambiental</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="c-flaring" height="280"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Tabla · Perfil de Riesgo por Yacimiento</span>
+      <span class="panel-sub">Semáforo en 4 dimensiones de riesgo</span>
+    </div>
+    <div class="panel-body">
+      <table class="data-table" id="t-riesgo"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  P6 · INTERPRETACIÓN PARA NO EXPERTOS
+════════════════════════════════════════ -->
+<section class="page" id="p6">
+
+  <div class="interp-hero">
+    <h2>📖 ¿Qué nos dicen estos datos? — Explicación en lenguaje sencillo</h2>
+    <p>Esta página traduce todo el análisis técnico anterior a ideas simples. No necesitas saber de petróleo
+    ni de estadística para entenderla: aquí está la historia del portafolio cargado, contada en términos
+    llanos, con la evidencia que la respalda — calculada automáticamente a partir de tus datos.</p>
+    <div class="tag-row" id="heroTags">
+      <span class="interp-tag">— yacimientos analizados</span>
+      <span class="interp-tag">— años de datos</span>
+      <span class="interp-tag">3 hallazgos principales</span>
+      <span class="interp-tag">Análisis descriptivo</span>
+    </div>
+  </div>
+
+  <!-- STORY 1 -->
+  <div class="story-card active">
+    <div class="story-num">01</div>
+    <div class="story-body">
+      <div class="story-title" id="s1-title">Concentración productiva del portafolio</div>
+      <div class="story-plain" id="s1-plain">Calculando…</div>
+      <div class="story-detail" id="s1-detail"></div>
+      <div class="story-evidence" id="s1-evidence"></div>
+      <div class="story-action" id="s1-action"></div>
+    </div>
+  </div>
+
+  <!-- STORY 2 -->
+  <div class="story-card active">
+    <div class="story-num">02</div>
+    <div class="story-body">
+      <div class="story-title" id="s2-title">Brecha de rentabilidad entre grupos de crudo</div>
+      <div class="story-plain" id="s2-plain">Calculando…</div>
+      <div class="story-detail" id="s2-detail"></div>
+      <div class="story-evidence" id="s2-evidence"></div>
+      <div class="story-action" id="s2-action"></div>
+    </div>
+  </div>
+
+  <!-- STORY 3 -->
+  <div class="story-card active">
+    <div class="story-num">03</div>
+    <div class="story-body">
+      <div class="story-title" id="s3-title">Estado de la base de pozos</div>
+      <div class="story-plain" id="s3-plain">Calculando…</div>
+      <div class="story-detail" id="s3-detail"></div>
+      <div class="story-evidence" id="s3-evidence"></div>
+      <div class="story-action" id="s3-action"></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- CONCLUSION -->
+  <div class="conclusion-banner" id="conclusionBanner"></div>
+
+  <div class="section-divider"></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">📚 Glosario · Términos usados en este análisis</span>
+      <span class="panel-sub">Para quienes no son del sector petrolero</span>
+    </div>
+    <div class="panel-body">
+      <div class="glossary-grid">
+        <div class="gloss-item"><div class="gloss-term">Yacimiento</div><div class="gloss-def">Un área geográfica donde se ha confirmado que existe petróleo y de donde se extrae mediante pozos.</div></div>
+        <div class="gloss-item"><div class="gloss-term">°API (gravedad API)</div><div class="gloss-def">Mide qué tan "pesado" o "liviano" es el petróleo. Mientras más alto el número, más liviano y más valioso es el crudo.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Lifting cost</div><div class="gloss-def">Lo que cuesta sacar un barril de petróleo a la superficie: energía, químicos, personal y mantenimiento.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Margen operativo</div><div class="gloss-def">La ganancia que queda por cada barril después de restar el costo de producirlo, antes de otros gastos.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Punto de equilibrio (breakeven)</div><div class="gloss-def">El precio mínimo al que se debe vender un barril para no perder dinero.</div></div>
+        <div class="gloss-item"><div class="gloss-term">BSW (agua y sedimentos)</div><div class="gloss-def">El porcentaje de agua mezclada con el petróleo que sale del pozo. Más agua significa más costo de tratamiento.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Pozos activos vs. totales</div><div class="gloss-def">De todos los pozos que alguna vez se perforaron en un yacimiento, cuántos siguen produciendo hoy.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Downtime</div><div class="gloss-def">El porcentaje de tiempo que la producción estuvo detenida por fallas o reparaciones no planeadas.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Reservas 1P / 2P</div><div class="gloss-def">El petróleo que aún queda bajo tierra. "1P" es lo que se tiene casi seguro que se puede sacar; "2P" incluye también lo probable.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Factor de recobro</div><div class="gloss-def">Qué porcentaje del petróleo total que existe en el yacimiento se podrá realmente extraer con la tecnología actual.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Flaring (quema de gas)</div><div class="gloss-def">Cuando el gas que sale junto con el petróleo se quema en una antorcha en vez de aprovecharse. Es un desperdicio y un problema ambiental.</div></div>
+        <div class="gloss-item"><div class="gloss-term">CAPEX</div><div class="gloss-def">El dinero invertido en construir, perforar o mejorar las instalaciones de un yacimiento.</div></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer class="dash-footer">
+  <div class="footer-text">Portafolio de Yacimientos · <span id="footerZona">Sur de Anzoátegui</span> · <span>Análisis Descriptivo</span></div>
+  <div class="footer-text"><span id="footerStats">— yacimientos · — registros</span> · 25 variables · 5 factores</div>
+  <div class="footer-text">Elaborado por:<span id="footerStats">@ramonguerraa</span></div>
+</footer>
+
+<div class="reload-bar">
+  <button class="btn" onclick="resetTool()">↺ Cargar otro archivo</button>
+</div>
+
+</div><!-- /#dashboardRoot -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
