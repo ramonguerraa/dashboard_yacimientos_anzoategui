@@ -1,0 +1,863 @@
+/* ==========================================================================
+   1. VARIABLES GLOBALES Y PALETA DE COLORES (DARK & GOLD)
+   ========================================================================== */
+:root {
+  /* Fondo oscuro principal (Sala de control nocturna) */
+  --bg-main: #0a0f14;       /* Negro azulado profundo */
+  --bg-panel: #111823;      /* Gris azulado para paneles y tarjetas */
+  --bg-input: #1a2332;      /* Fondo para selects y zonas de arrastre */
+  
+  /* Tipografía y Bordes */
+  --text-main: #e2e8f0;     /* Blanco suave para no cansar la vista */
+  --text-muted: #8a99ad;    /* Gris claro para subtítulos y unidades */
+  --border-color: #1e293b;  /* Líneas divisorias sutiles */
+  
+  /* Paleta de Acentos Petroleros y Financieros */
+  --amber: #e8a832;         /* El dorado/ámbar del logo de tu esposa */
+  --amber-hover: #c8841a;   /* Dorado más oscuro para estados interactivos */
+  --green-success: #10b981; /* Verde para márgenes altos y producción óptima */
+  --red-alert: #ef4444;     /* Rojo para breakeven crítico y flaring alto */
+  
+  /* Efectos */
+  --radius: 8px;            /* Esquinas suavizadas estándar */
+  --transition: all 0.25s ease;
+}
+
+/* ==========================================================================
+   2. RESETEO GENERAL Y TIPOGRAFÍA BASE
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   3. PANTALLA DE BIENVENIDA Y CARGA (UPLOAD SCREEN)
+   ========================================================================== */
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: radial-gradient(circle at center, #111a2e 0%, var(--bg-main) 70%);
+}
+
+/* Bloque de Marca Personal (Logo Dorado) */
+.brand-welcome {
+  text-align: center;
+  margin-bottom: 30px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.main-logo {
+  max-width: 140px; /* Tamaño ideal para que tu logo tenga presencia */
+  height: auto;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 4px 12px rgba(232, 168, 50, 0.15)); /* Sutil destello dorado */
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-main);
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  color: var(--amber); /* Resalta tu especialidad en dorado */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 5px;
+}
+
+/* Tarjeta de Carga del CSV */
+.upload-card {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: calc(var(--radius) * 1.5);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.6s ease-out;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.upload-card h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.upload-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+/* Zona de Arrastre (Drop Zone) */
+.drop-zone {
+  border: 2px dashed var(--border-color);
+  background-color: var(--bg-input);
+  border-radius: var(--radius);
+  padding: 35px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--amber);
+  background-color: rgba(232, 168, 50, 0.04);
+}
+
+/* Animaciones de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   4. BARRA SUPERIOR DE CONTROL (TOPBAR)
+   ========================================================================== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 24px;
+  height: 70px;
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Asegura que los gráficos no pasen por encima al hacer scroll */
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  font-size: 24px;
+}
+
+.brand-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   5. PASARELA DE PESTAÑAS INTERACTIVAS (NAV TABS)
+   ========================================================================== */
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.nav-tab.active {
+  color: var(--amber); /* El dorado toma el control de la pestaña activa */
+  border-bottom-color: var(--amber);
+  background-color: rgba(232, 168, 50, 0.03);
+}
+
+/* Indicadores de color por factor técnico */
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   6. SELECTORES DE FILTROS GLOBALES
+   ========================================================================== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+select {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+select:focus {
+  border-color: var(--amber);
+}
+
+/* ==========================================================================
+   7. COMPONENTES DE BOTONES UNIVERSALES
+   ========================================================================== */
+.btn {
+  background-color: var(--amber);
+  color: #000000; /* Alto contraste: texto negro sobre fondo dorado */
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.btn:hover:not(:disabled) {
+  background-color: var(--amber-hover);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   8. BANDA DE RATIOS GLOBALES (KPI STRIP)
+   ========================================================================== */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 tarjetas perfectamente distribuidas */
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: var(--bg-main);
+}
+
+.kpi-card {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
+}
+
+.kpi-card:hover {
+  border-color: rgba(232, 168, 50, 0.2); /* Sutil destello dorado al pasar el mouse */
+  transform: translateY(-2px);
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.kpi-unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Micro-etiquetas de Variación Estadística (Deltas) */
+.kpi-delta {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.kpi-delta.up {
+  color: var(--green-success);
+}
+
+.kpi-delta.down {
+  color: var(--text-muted); /* Opcional por si es un comportamiento neutral */
+}
+
+.kpi-delta.warn {
+  color: var(--amber); /* Alerta preventiva */
+}
+
+.kpi-delta.critical {
+  color: var(--red-alert); /* Alerta crítica o breakeven roto */
+}
+
+/* ==========================================================================
+   9. CONTENEDOR ELÁSTICO DE PÁGINAS (MAIN & PAGE STRUCTURE)
+   ========================================================================== */
+.main {
+  flex: 1;
+  padding: 8px 24px 24px 24px;
+  overflow-y: auto; /* Permite el scroll vertical independiente de las páginas */
+  background-color: var(--bg-main);
+}
+
+/* Control de flujo de la Aduana Maestra */
+#dashboardRoot {
+  display: none; /* El JS cambia esto a 'block' tras validar el CSV */
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+/* Mecanismo de Activación de Pantallas */
+.page {
+  display: none; /* Todas las páginas nacen invisibles */
+  animation: fadeInPage 0.4s ease-out;
+}
+
+.page.active {
+  display: block; /* Solo la página con la clase active se dibuja en pantalla */
+}
+
+/* Animación sutil de transición entre pestañas */
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   10. ENCABEZADOS DE PÁGINA (PAGE HEADER)
+   ========================================================================== */
+.page-header {
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.page-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--amber); /* Ceja de identificación en color dorado corporativo */
+  margin-bottom: 4px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.page-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  max-width: 800px;
+}
+
+/* ==========================================================================
+   11. BANNERS DE DIAGNÓSTICO ESTRATÉGICO (INSIGHT BANNER)
+   ========================================================================== */
+.insight-banner {
+  background: linear-gradient(90deg, rgba(232, 168, 50, 0.07) 0%, rgba(17, 24, 35, 0.6) 100%);
+  border-left: 4px solid var(--amber); /* Línea de acento dorado izquierdo */
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.insight-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.insight-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+
+.insight-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.insight-text strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   12. CUADRÍCULA MULTICOLUMNA Y ESTRUCTURA DE PANELES (.GRID-2 & .PANEL)
+   ========================================================================== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Dos columnas perfectamente equilibradas */
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* La Caja Contenedora de Gráficos y Listas */
+.panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
+}
+
+.panel:hover {
+  border-color: rgba(232, 168, 50, 0.1);
+}
+
+.panel-head {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.2px;
+}
+
+.panel-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* El Envoltorio Elástico del Canvas (Chart.js) */
+.panel-body {
+  position: relative;
+  width: 100%;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   13. TABLAS OPERATIVAS DE DATOS (DATA TABLES & TRAFFIC LIGHTS)
+   ========================================================================== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.data-table th {
+  background-color: var(--bg-input);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+/* Filas alternadas para facilitar el seguimiento visual */
+.data-table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(232, 168, 50, 0.02); /* Ilumina la fila en dorado sutil */
+}
+
+/* Micro-Semáforos Redondos de Control Financiero y Riesgo */
+.traffic {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  box-shadow: 0 0 8px currentColor; /* Efecto de brillo de sala de operaciones */
+}
+
+.traffic.green { color: var(--green-success); background-color: var(--green-success); }
+.traffic.amber { color: var(--amber); background-color: var(--amber); }
+.traffic.red { color: var(--red-alert); background-color: var(--red-alert); }
+
+/* Micro-barras de Progreso Operativo dentro de las Celdas */
+.progress-bar-container {
+  width: 100%;
+  background-color: var(--bg-input);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--amber); /* Por defecto usa el dorado corporativo */
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ==========================================================================
+   14. FICHAS DE RANKING COMPUESTO (TOP 5 / BOTTOM 5)
+   ========================================================================== */
+.score-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.score-row:hover {
+  border-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.score-rank {
+  font-size: 11px;
+  font-weight: 700;
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+#top5 .score-rank {
+  color: #000000;
+  background-color: var(--amber); /* Resalta los ganadores en dorado */
+}
+
+/* ==========================================================================
+   15. MAPA DE CALOR COMPACTO MULTIDIMENSIONAL (HEATMAP)
+   ========================================================================== */
+#heatmap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto; /* Protección contra desbordamiento en pantallas de laptops */
+  padding-bottom: 4px;
+}
+
+.heatmap-row {
+  display: grid;
+  grid-template-columns: 180px repeat(5, 1fr); /* Columna fija para el nombre del yacimiento */
+  gap: 6px;
+  align-items: center;
+}
+
+.heatmap-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatmap-cell {
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #000000; /* Texto oscuro para máxima legibilidad sobre fondos de color */
+  transition: var(--transition);
+  cursor: help; /* Indica que tiene una descripción emergente */
+}
+
+/* Clases de Intensidad del Calor */
+.heatmap-cell.v-high { background-color: #10b981; } /* Verde Intenso */
+.heatmap-cell.high   { background-color: #34d399; } /* Verde Suave */
+.heatmap-cell.mid    { background-color: #fbbf24; } /* Amarillo/Ámbar */
+.heatmap-cell.low    { background-color: #f87171; } /* Rojo Suave */
+.heatmap-cell.v-low  { background-color: #ef4444; } /* Rojo Intenso */
+
+/* ==========================================================================
+   16. HISTORIAS NARRATIVAS EDITORIALES (STORY CARDS)
+   ========================================================================== */
+.interp-hero {
+  background: linear-gradient(135deg, #131c2e 0%, var(--bg-panel) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 30px;
+  margin-bottom: 24px;
+}
+
+.interp-hero h2 {
+  font-size: 18px;
+  color: var(--amber); /* Título narrativo en el dorado del logo */
+  margin-bottom: 10px;
+}
+
+.interp-hero p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  max-width: 900px;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.interp-tag {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+/* Tarjetas de Historias Traducidas */
+.story-card {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-color); /* Borde sutil por defecto */
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 20px;
+  transition: var(--transition);
+}
+
+.story-card.active {
+  border-left-color: var(--amber); /* El dorado enciende la historia activa */
+  background: linear-gradient(90deg, rgba(232, 168, 50, 0.02) 0%, var(--bg-panel) 100%);
+}
+
+.story-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: rgba(232, 168, 50, 0.3); /* Dorado con transparencia sutil */
+  line-height: 1;
+}
+
+.story-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.story-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.story-plain {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.story-detail, .story-evidence, .story-action {
+  font-size: 13px;
+  line-height: 1.5;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-color);
+}
+
+.story-detail  { color: var(--text-muted); }
+.story-evidence{ color: var(--text-muted); border-left-color: var(--amber); } /* Evidencia en dorado */
+.story-action  { color: var(--text-main); font-weight: 500; }
+
+.section-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 32px 0;
+}
+
+/* Banner de Conclusión Dinámica */
+.conclusion-banner {
+  background-color: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(10, 185, 129, 0.15);
+  border-radius: var(--radius);
+  padding: 20px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   17. REJILLA DEL GLOSARIO ACCESIBLE
+   ========================================================================== */
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Dos columnas equilibradas de términos */
+  gap: 16px;
+}
+
+.gloss-item {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.gloss-term {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--amber); /* Términos destacados en dorado */
+  margin-bottom: 4px;
+}
+
+.gloss-def {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   18. PIE DE PÁGINA (DASH FOOTER) Y RESET BAR
+   ========================================================================== */
+.dash-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding: 16px 24px;
+  background-color: var(--bg-panel);
+  margin-top: auto; /* Fuerza al footer a quedarse siempre abajo */
+}
+
+.footer-text {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* Barra de Reseteo Flotante en la Esquina Inferior */
+.reload-bar {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  z-index: 200;
+  width: auto;
+}
+
+.reload-bar .btn {
+  padding: 8px 16px;
+  font-size: 12.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-panel);
+  color: var(--amber); /* Botón secundario: dorado sobre fondo de panel */
+  border: 1px solid var(--amber);
+  width: auto;
+}
+
+.reload-bar .btn:hover {
+  background-color: var(--amber);
+  color: #000000;
+}
+
