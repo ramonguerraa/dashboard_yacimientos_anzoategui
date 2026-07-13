@@ -72,7 +72,7 @@ git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/
 <table align="center">
   <tr>
     <td align="center" width="150">
-      <img src="assets/foto_personal.jpg" width="120" style="border-radius:50%;" alt="Ramón Antonio Guerra Acosta"><br> -->
+      <img src="assets/foto_personal.jpg" width="120" style="border-radius:50%;" alt="Ramón Antonio Guerra Acosta"><br>
       <strong>Ramón Guerra</strong><br>
       <small>Data Analyst</small>
     </td>
