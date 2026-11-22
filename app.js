@@ -1,3 +1,9 @@
+// Escapa texto proveniente del archivo cargado antes de insertarlo en innerHTML
+function esc(v){
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 /* ==============================================================
    0. DATASET
    ============================================================== */
@@ -802,7 +808,7 @@ function buildCharts(ds){
     arr.forEach((d,i)=>{
       el.innerHTML += `<div class="score-row">
         <div class="score-rank">${i+1}</div>
-        <div class="score-name">${d.y}</div>
+        <div class="score-name">${esc(d.y)}</div>
         <div style="font-size:10px;color:var(--text-lo);flex:1">${(d.prod/1000).toFixed(0)}K bbl/d</div>
         <div class="score-val" style="color:${good?'#5EC98A':'#E87070'}">${(d.mo).toFixed(1)} $/bbl</div>
       </div>`;
@@ -896,9 +902,9 @@ function buildCharts(ds){
     const r=ds.filter(d=>d.y===y);
     const vp24=ds.find(d=>d.y===y&&d.an===2024)?.vp||0;
     tProd.innerHTML+=`<tr>
-      <td class="bold">${y}</td>
-      <td>${r[0].z}</td>
-      <td><span class="badge ${BADGE[r[0].t]}">${r[0].t}</span></td>
+      <td class="bold">${esc(y)}</td>
+      <td>${esc(r[0].z)}</td>
+      <td><span class="badge ${BADGE[r[0].t]}">${esc(r[0].t)}</span></td>
       <td class="mono">${avg(r,'api').toFixed(1)}</td>
       <td class="mono">${(avg(r,'prod')/1000).toFixed(1)}</td>
       <td class="mono" style="color:${vp24<0?'#E87070':'#5EC98A'}">${vp24.toFixed(1)}%</td>
@@ -968,8 +974,8 @@ function buildCharts(ds){
     const mo=avg(r,'mo'),be=avg(r,'be');
     const ok=mo>be*1.2;const warn=mo>be&&mo<=be*1.2;
     tFin.innerHTML+=`<tr>
-      <td class="bold">${y}</td>
-      <td><span class="badge ${BADGE[r[0].t]}">${r[0].t}</span></td>
+      <td class="bold">${esc(y)}</td>
+      <td><span class="badge ${BADGE[r[0].t]}">${esc(r[0].t)}</span></td>
       <td class="mono">$${avg(r,'pr').toFixed(1)}</td>
       <td class="mono">$${avg(r,'lc').toFixed(1)}</td>
       <td class="mono" style="color:${mo>be?'#5EC98A':'#E87070'}">$${mo.toFixed(1)}</td>
@@ -1039,7 +1045,7 @@ function buildCharts(ds){
     const ra=avg(r,'rpa'),dt=avg(r,'dt');
     const ok=ra>65&&dt<15; const warn=ra>50||dt<25;
     tInfra.innerHTML+=`<tr>
-      <td class="bold">${y}</td>
+      <td class="bold">${esc(y)}</td>
       <td class="mono">${avg(r,'pa').toFixed(0)}</td>
       <td class="mono">${avg(r,'pt').toFixed(0)}</td>
       <td class="mono">${ra.toFixed(1)}%
@@ -1111,9 +1117,9 @@ function buildCharts(ds){
     const r=ds.filter(d=>d.y===y);
     const cl=r[0].cl;
     tRes.innerHTML+=`<tr>
-      <td class="bold">${y}</td>
-      <td><span class="badge ${BADGE[r[0].t]}">${r[0].t}</span></td>
-      <td><span class="badge badge-${cl.toLowerCase()}">${cl}</span></td>
+      <td class="bold">${esc(y)}</td>
+      <td><span class="badge ${BADGE[r[0].t]}">${esc(r[0].t)}</span></td>
+      <td><span class="badge badge-${cl.toLowerCase()}">${esc(cl)}</span></td>
       <td class="mono">${avg(r,'r1').toFixed(0)}</td>
       <td class="mono">${avg(r,'r2').toFixed(0)}</td>
       <td class="mono">${avg(r,'fr').toFixed(1)}%</td>
@@ -1159,8 +1165,8 @@ function buildCharts(ds){
     const flOk=fl<5,flWarn=fl<20;
     const global=sa===1||(!cvOk&&!cvWarn)||(!incOk&&!incWarn)?'red':(!cvOk||!incOk||!flOk)?'yellow':'green';
     tRiesgo.innerHTML+=`<tr>
-      <td class="bold">${y}</td>
-      <td><span class="badge ${BADGE[r[0].t]}">${r[0].t}</span></td>
+      <td class="bold">${esc(y)}</td>
+      <td><span class="badge ${BADGE[r[0].t]}">${esc(r[0].t)}</span></td>
       <td class="mono">${cv.toFixed(3)}</td>
       <td class="mono">${inc.toFixed(0)}</td>
       <td class="mono">${fl.toFixed(1)}</td>

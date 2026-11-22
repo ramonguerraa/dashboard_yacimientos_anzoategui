@@ -49,7 +49,7 @@ El sistema requiere un archivo con formato delimitado por comas (`.csv`) con cod
 ```csv
 Yacimiento,Zona,Anio,Produccion,Lifting_Cost,Breakeven,Pozos_Activos,Pozos_Totales,Reservas_1P,Reservas_2P,Flaring
 ```
-⚠️ Nota: Se genera un archivo `DEMO_DATA.csv` en el repositorio como set de datos multianual de simulación listo para pruebas.
+> **Datos de ejemplo:** los 15 yacimientos del botón de ejemplo son **sintéticos**. Fueron generados para demostrar el flujo analítico y no representan campos reales ni cifras oficiales.
 
 ## 💻 Instalación y Despliegue Local
 Al estar construido sobre tecnología web nativa, el proyecto no requiere configuraciones complejas de Node.js ni bases de datos activas:
@@ -57,13 +57,13 @@ Al estar construido sobre tecnología web nativa, el proyecto no requiere config
 1. Clona este repositorio en tu máquina local:
 
 ```bash
-git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/tu-usuario/tu-repositorio.git)
+git clone https://github.com/ramonguerraa/dashboard_yacimientos_anzoategui.git
 ```
 2. Abre la carpeta del proyecto en tu editor (ej. `Visual Studio Code`).
 
 3. Levanta un servidor local utilizando la extensión Live Server (clic derecho sobre `index.html` -> `Open with Live Server`).
 
-4. Presiona el botón `Usar datos de ejemplo (15 yacimientos)` en la aduana de entrada y explora los tableros analíticos.
+4. Presiona el botón `Usar datos de ejemplo (15 yacimientos sintéticos)` en la aduana de entrada y explora los tableros analíticos.
 
 ---
 
@@ -77,7 +77,7 @@ git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/
       <small>Data Analyst</small>
     </td>
     <td>
-      <p>Sistema desarrollado como parte del portafolio técnico enfocado en la optimización analítica y toma de decisiones estratégicas dentro del sector hidrocarburos.</p>
+      <p>Proyecto de análisis descriptivo con datos sintéticos, orientado a la priorización de inversión en el sector hidrocarburos.</p>
       <!-- BADGES DE CONTACTO PROFESIONAL -->
       <a href="mailto:ramonguerraa@gmail.com">
         <img src="https://img.shields.io/badge/Email-D14836?style=flat-square&logo=gmail&logoColor=white" alt="Email">
@@ -93,5 +93,5 @@ git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/
 </table>
 
 <p align="center">
-  <small>Desarrollado con dedicación y rigor técnico • Región Oriental, Venezuela • 2026</small>
+  <small>Región Oriental, Venezuela • 2026</small>
 </p>
